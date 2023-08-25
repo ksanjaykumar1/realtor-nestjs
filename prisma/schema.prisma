@@ -17,11 +17,11 @@ model User {
   email               String
   password            String
   created_at          DateTime @default(now())
-  updated_At          DateTime @updatedAt
+  updated_at          DateTime @updatedAt
   userType            UserType
 
 }
-model House {
+model Home {
   id                  Int @id @default(autoincrement())
   address             String
   number_of_bedrooms  Int
@@ -32,14 +32,17 @@ model House {
   land_size           Float
   propertyType        PropertyType
   created_at          DateTime @default(now())
-  updated_At          DateTime @updatedAt
+  updated_at          DateTime @updatedAt
+  images              Image[]
 }
 
 model Image {
   id                  Int @id @default(autoincrement())
   url                 String
   created_at          DateTime @default(now())
-  updated_At          DateTime @updatedAt
+  updated_at          DateTime @updatedAt
+  home_id             Int
+  home                Home @relation(fields: [home_id], references: [id])
 }
 
 model Message {
