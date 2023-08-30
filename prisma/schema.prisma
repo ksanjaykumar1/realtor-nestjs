@@ -19,6 +19,10 @@ model User {
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
   userType            UserType
+  homes               Home[]
+  buyer_mesages       Message[] @relation("buyer_messages")
+  realtor_mesages     Message[] @relation("realtor_mesages")
+
 
 }
 model Home {
@@ -34,6 +38,9 @@ model Home {
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
   images              Image[]
+  realtor_id          Int
+  realtor             User @relation(fields: [realtor_id], references: [id])
+  messages             Message[]
 }
 
 model Image {
@@ -48,6 +55,12 @@ model Image {
 model Message {
   id                   Int @id @default(autoincrement())
   message              String
+  home_id              Int
+  home                 Home @relation(fields: [home_id], references: [id])
+  realtor_id           Int
+  realtor              User @relation("realtor_mesages",fields: [realtor_id], references: [id])
+  buyer_id             Int
+  buyer                User @relation("buyer_messages",fields: [buyer_id], references: [id])
 }
 
 enum PropertyType {
