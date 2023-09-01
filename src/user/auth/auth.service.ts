@@ -55,4 +55,8 @@ export class AuthService {
   private generateJwt(payload: JwtPayload) {
     return jwt.sign(payload, process.env.JSON_TOKEN_KEY, { expiresIn: 360000 });
   }
+  generateProductKey(email: string, userType: UserType) {
+    const string = `${email}-${userType}-${process.env.PRODUCT_KEY}`;
+    return bcrypt.hash(string, 10);
+  }
 }
