@@ -12,7 +12,7 @@ interface JwtPayload {
 @Injectable()
 export class AuthService {
   constructor(private readonly prismaService: PrismaService) {}
-  async signup(signupDto: SignupDto) {
+  async signup(signupDto: SignupDto, userType: UserType) {
     const { email, password, name, phone } = signupDto;
     const userExist = await this.prismaService.user.findUnique({
       where: { email },
@@ -27,7 +27,7 @@ export class AuthService {
         password: hashedPassword,
         name,
         phone,
-        user_type: UserType.BUYER,
+        user_type: userType,
       },
     });
     const token = await this.generateJwt({
