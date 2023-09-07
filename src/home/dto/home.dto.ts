@@ -76,8 +76,11 @@ export class HomeResponseDto {
   }
 }
 class Image {
+  @IsString()
+  @IsNotEmpty()
   url: string;
 }
+
 export class CreateHomeDto {
   @IsString()
   @IsNotEmpty()
@@ -111,7 +114,6 @@ export class CreateHomeDto {
   @Type(() => Image)
   images: Image[];
 }
-
 export class UpdateHomeDto {
   @IsOptional()
   @IsString()
