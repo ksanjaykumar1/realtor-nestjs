@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HomeResponseDto } from './dto/home.dto';
 import { PropertyType } from '@prisma/client';
+import { UserInfo } from 'src/user/interceptors/user.interceptor';
 
 interface GetHomesPram {
   city?: string;
@@ -134,9 +139,39 @@ export class HomeService {
       // },
     });
     if (!home) {
-      throw new NotFoundException();
+      throw new NotFoundException(`Home not found with id : ${id}`);
     }
-    console.log(home);
     return home;
+  }
+  async inquire(buyer: UserInfo, homeId: number, message: string) {
+    const { realtor_id } = await this.getRealtorByHomeId(homeId);
+    return this.prismaService.message.create({
+      data: {
+        buyer_id: buyer.id,
+        home_id: homeId,
+        message,
+        realtor_id: realtor_id,
+      },
+    });
+  }
+  async getMessagesByHome(realtor: UserInfo, homeId: number) {
+    const { realtor_id } = await this.getRealtorByHomeId(homeId);
+    if (realtor_id !== realtor.id) {
+      throw new UnauthorizedException();
+    }
+    return this.prismaService.message.findMany({
+      where: {
+        realtor_id: realtor_id,
+        home_id: homeId,
+      },
+      select: {
+        message: true,
+        buyer: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
   }
 }

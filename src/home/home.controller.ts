@@ -11,10 +11,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
-import { CreateHomeDto, HomeResponseDto, UpdateHomeDto } from './dto/home.dto';
+import {
+  CreateHomeDto,
+  HomeResponseDto,
+  InquireDto,
+  UpdateHomeDto,
+} from './dto/home.dto';
 import { PropertyType, UserType } from '@prisma/client';
 import { User } from 'src/user/decorator/user.decorator';
-import { UserToken } from 'src/user/interceptors/user.interceptor';
+import { UserInfo } from 'src/user/interceptors/user.interceptor';
 import { Roles } from 'src/decorators/role.decorators';
 
 @Controller('home')
@@ -48,14 +53,14 @@ export class HomeController {
 
   @Roles(UserType.REALTOR)
   @Post()
-  createHome(@Body() body: CreateHomeDto, @User() user: UserToken) {
+  createHome(@Body() body: CreateHomeDto, @User() user: UserInfo) {
     return this.homeService.createHome(body, user.id);
   }
   @Put(':id')
   async updateHome(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateHomeDto,
-    @User() user: UserToken,
+    @User() user: UserInfo,
   ) {
     const home = await this.homeService.getRealtorByHomeId(id);
     if (home.realtor_id !== user.id) {
@@ -67,12 +72,30 @@ export class HomeController {
   @Delete(':id')
   async deleteHome(
     @Param('id', ParseIntPipe) id: number,
-    @User() user: UserToken,
+    @User() user: UserInfo,
   ) {
     const home = await this.homeService.getRealtorByHomeId(id);
     if (home.realtor_id !== user.id) {
       throw new UnauthorizedException();
     }
     return this.homeService.deleteHomeById(id);
+  }
+  @Roles(UserType.BUYER)
+  @Post('inquire/:id')
+  inquireAbout(
+    @Param('id', ParseIntPipe) homeId: number,
+    @User() user: UserInfo,
+    @Body() { message }: InquireDto,
+  ) {
+    return this.homeService.inquire(user, homeId, message);
+  }
+
+  @Roles(UserType.REALTOR)
+  @Get('/:id/messages')
+  getHomeMessages(
+    @Param('id', ParseIntPipe) homeId: number,
+    @User() user: UserInfo,
+  ) {
+    return this.homeService.getMessagesByHome(user, homeId);
   }
 }
